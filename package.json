@@ -2,7 +2,7 @@
   "name": "saman-replacer",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://ehsan-sotoodeh.github.io/saman-replacer",
+  "homepage": "https://ehsan-set.github.io/saman-replacer",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",

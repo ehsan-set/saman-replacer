@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import SpeechControls from "./components/SpeechControls";
 import QuestionList from "./components/QuestionList";
 import SettingsModal from "./components/SettingsModal";
-
+import DictationComponent from "./components/DictationComponent";
 import { streamChatGPTAnswer } from "./services/chatgptService";
 import {
   saveQuestions,
@@ -109,6 +109,7 @@ function App() {
             onAddQuestion={handleAddQuestion}
             onReset={handleReset}
           />
+          <DictationComponent />
         </div>
 
         {/* Right Column */}
