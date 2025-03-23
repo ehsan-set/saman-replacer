@@ -11,10 +11,12 @@ import {
   loadQuestions,
   clearAllData,
 } from "./utils/localStorageHelpers";
+import useLocalStorageState from "use-local-storage-state";
 
 function App() {
   const [questions, setQuestions] = useState([]);
   const [showSettings, setShowSettings] = useState(false);
+  const [contextNote, setContextNote] = useLocalStorageState("contextNote");
 
   useEffect(() => {
     // Load questions from localStorage on mount and sort by newest (highest id first)
@@ -93,6 +95,10 @@ function App() {
     setQuestions([]);
   };
 
+  const handleContextChange = (e) => {
+    setContextNote(e.target.value);
+  };
+
   return (
     <div className="container my-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -105,11 +111,31 @@ function App() {
       <div className="row">
         {/* Left Column */}
         <div className="col-4 height-100">
-          <SpeechControls
+          {/* <SpeechControls
+            onAddQuestion={handleAddQuestion}
+            onReset={handleReset}
+          /> */}
+          <h4>V5</h4>
+
+          <div className="mb-2">
+            {/* Manual context note input */}
+            <label htmlFor="contextNote" className="form-label">
+              Context Note
+            </label>
+            <textarea
+              id="contextNote"
+              className="form-control"
+              rows="5"
+              value={contextNote}
+              onChange={handleContextChange}
+              placeholder="Type your context note here..."
+            />
+          </div>
+
+          <DictationComponent
             onAddQuestion={handleAddQuestion}
             onReset={handleReset}
           />
-          <DictationComponent />
         </div>
 
         {/* Right Column */}

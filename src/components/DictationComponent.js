@@ -1,63 +1,94 @@
 import React, { useState, useRef } from "react";
 
-function DictationComponent() {
+function DictationComponent({ onAddQuestion, onReset }) {
   const [transcript, setTranscript] = useState("");
+  const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
 
-  const startListening = () => {
-    // Check for SpeechRecognition API support (including iPad/Safari)
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Speech Recognition is not supported in this browser.");
-      return;
+  const toggleListening = () => {
+    if (!isListening) {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech Recognition is not supported in this browser.");
+        return;
+      }
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.continuous = false; // Stop automatically after a phrase
+      recognition.interimResults = false; // Only use final results
+
+      recognition.onresult = (event) => {
+        const resultText = event.results[0][0].transcript;
+        // Update transcript state and notify parent
+        setTranscript(resultText);
+        onAddQuestion(resultText);
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+        recognitionRef.current = null;
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+      setIsListening(true);
+    } else {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        setIsListening(false);
+      }
     }
+  };
 
-    // Create a new instance of SpeechRecognition
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US"; // Change language if needed
-    recognition.continuous = false; // Stop automatically after one phrase
-    recognition.interimResults = false; // Only use final results
+  // Reset only the transcript (input)
+  const resetTranscript = () => {
+    setTranscript("");
+    // Optionally notify parent with an empty transcript update:
+    //onAddQuestion("");
+  };
 
-    // Event handler when a result is obtained
-    recognition.onresult = (event) => {
-      // Grab the transcript from the first (and only) result
-      const resultText = event.results[0][0].transcript;
-      setTranscript(resultText);
-    };
-
-    recognition.onerror = (event) => {
-      console.error("Speech recognition error:", event.error);
-    };
-
-    recognition.onend = () => {
-      console.log("Speech recognition ended.");
-    };
-
-    // Store the recognition instance if needed later and start listening
-    recognitionRef.current = recognition;
-    recognition.start();
+  // Handle manual edits and update parent on every change.
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+    setTranscript(newValue);
+    if (newValue.trim().length > 0) {
+      console.log("asking...");
+      onAddQuestion(newValue);
+    }
   };
 
   return (
     <div style={{ padding: "1rem" }}>
-      <button
-        onClick={startListening}
-        style={{ padding: "0.5rem 1rem", fontSize: "16px" }}
-      >
-        Start Listening
-      </button>
-      <div
+      <textarea
         style={{
           marginTop: "20px",
           padding: "1rem",
           border: "1px solid #ccc",
           borderRadius: "4px",
+          width: "100%",
+          minHeight: "100px",
         }}
-      >
-        <h3>Dictated Text:</h3>
-        <p>{transcript}</p>
+        value={transcript}
+        onChange={handleInputChange}
+        placeholder="Dictated text will appear here. You can also edit it manually..."
+      />
+      <div className="d-flex justify-content-between align-items-center mb-3 mt-5">
+        <button onClick={toggleListening} className="btn btn-lg btn-primary">
+          {isListening ? "Stop Listening" : "Start Listening"}
+        </button>
+        <button onClick={resetTranscript} className="btn btn-lg btn-danger">
+          Reset Input
+        </button>
       </div>
+      <button onClick={onReset} className="btn btn-lg btn-warning">
+        <br />
+        Reset Questions
+      </button>
     </div>
   );
 }
